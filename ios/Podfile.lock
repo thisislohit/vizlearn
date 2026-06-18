@@ -1,0 +1,337 @@
+PODS:
+  - app_links (6.4.1):
+    - Flutter
+  - app_settings (5.1.1):
+    - Flutter
+  - ar_flutter_plugin_plus (1.0.0):
+    - ARCore/CloudAnchors (~> 1.51.0)
+    - Flutter
+    - GLTFSceneKit
+    - SwiftJWT
+  - ARCore/Base (1.51.0):
+    - GoogleDataTransport (< 11.0, >= 10.0)
+    - nanopb (< 3.30911.0, >= 3.30908.0)
+  - ARCore/CloudAnchors (1.51.0):
+    - ARCore/GARSession (~> 1.51)
+    - GTMSessionFetcher/Core (< 4.0, >= 1.5)
+    - nanopb (< 3.30911.0, >= 3.30908.0)
+  - ARCore/GARSession (1.51.0):
+    - ARCore/Base (~> 1.51)
+    - Firebase/RemoteConfig (>= 11.0)
+    - nanopb (< 3.30911.0, >= 3.30908.0)
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - BlueCryptor (1.0.32)
+  - BlueECC (1.2.201)
+  - BlueRSA (1.0.203)
+  - connectivity_plus (0.0.1):
+    - Flutter
+  - device_info_plus (0.0.1):
+    - Flutter
+  - ffmpeg_kit_flutter_new_min_gpl (7.1.1):
+    - ffmpeg_kit_flutter_new_min_gpl/min-gpl (= 7.1.1)
+    - Flutter
+  - ffmpeg_kit_flutter_new_min_gpl/min-gpl (7.1.1):
+    - Flutter
+  - Firebase/CoreOnly (12.4.0):
+    - FirebaseCore (~> 12.4.0)
+  - Firebase/Messaging (12.4.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 12.4.0)
+  - Firebase/RemoteConfig (12.4.0):
+    - Firebase/CoreOnly
+    - FirebaseRemoteConfig (~> 12.4.0)
+  - firebase_core (4.2.1):
+    - Firebase/CoreOnly (= 12.4.0)
+    - Flutter
+  - firebase_messaging (16.0.4):
+    - Firebase/Messaging (= 12.4.0)
+    - firebase_core
+    - Flutter
+  - FirebaseABTesting (12.4.0):
+    - FirebaseCore (~> 12.4.0)
+  - FirebaseCore (12.4.0):
+    - FirebaseCoreInternal (~> 12.4.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreInternal (12.4.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.4.0):
+    - FirebaseCore (~> 12.4.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.4.0):
+    - FirebaseCore (~> 12.4.0)
+    - FirebaseInstallations (~> 12.4.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
+  - FirebaseRemoteConfig (12.4.0):
+    - FirebaseABTesting (~> 12.4.0)
+    - FirebaseCore (~> 12.4.0)
+    - FirebaseInstallations (~> 12.4.0)
+    - FirebaseRemoteConfigInterop (~> 12.4.0)
+    - FirebaseSharedSwift (~> 12.4.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseRemoteConfigInterop (12.4.0)
+  - FirebaseSharedSwift (12.4.0)
+  - Flutter (1.0.0)
+  - flutter_blue_plus_darwin (0.0.2):
+    - Flutter
+    - FlutterMacOS
+  - flutter_local_notifications (0.0.1):
+    - Flutter
+  - flutter_secure_storage (6.0.0):
+    - Flutter
+  - geolocator_apple (1.2.0):
+    - Flutter
+    - FlutterMacOS
+  - GLTFSceneKit (0.3.0)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.1.0):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.1.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.0)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/Reachability (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTMSessionFetcher/Core (3.5.0)
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - KituraContracts (1.2.1):
+    - LoggerAPI (~> 1.7)
+  - location (0.0.1):
+    - Flutter
+  - LoggerAPI (1.9.200):
+    - Logging (~> 1.1)
+  - Logging (1.4.0)
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
+  - open_filex (0.0.2):
+    - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - pointer_interceptor_ios (0.0.1):
+    - Flutter
+  - PromisesObjC (2.4.0)
+  - share_plus (0.0.1):
+    - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - SwiftJWT (3.6.200):
+    - BlueCryptor (~> 1.0)
+    - BlueECC (~> 1.1)
+    - BlueRSA (~> 1.0)
+    - KituraContracts (~> 1.2)
+    - LoggerAPI (~> 1.7)
+  - url_launcher_ios (0.0.1):
+    - Flutter
+  - video_player_avfoundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - wifi_iot (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - app_links (from `.symlinks/plugins/app_links/ios`)
+  - app_settings (from `.symlinks/plugins/app_settings/ios`)
+  - ar_flutter_plugin_plus (from `.symlinks/plugins/ar_flutter_plugin_plus/ios`)
+  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/darwin`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - ffmpeg_kit_flutter_new_min_gpl (from `.symlinks/plugins/ffmpeg_kit_flutter_new_min_gpl/ios`)
+  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
+  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_blue_plus_darwin (from `.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - location (from `.symlinks/plugins/location/ios`)
+  - open_filex (from `.symlinks/plugins/open_filex/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - pointer_interceptor_ios (from `.symlinks/plugins/pointer_interceptor_ios/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
+  - wifi_iot (from `.symlinks/plugins/wifi_iot/ios`)
+
+SPEC REPOS:
+  trunk:
+    - ARCore
+    - BlueCryptor
+    - BlueECC
+    - BlueRSA
+    - Firebase
+    - FirebaseABTesting
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - FirebaseRemoteConfig
+    - FirebaseRemoteConfigInterop
+    - FirebaseSharedSwift
+    - GLTFSceneKit
+    - GoogleDataTransport
+    - GoogleUtilities
+    - GTMSessionFetcher
+    - KituraContracts
+    - LoggerAPI
+    - Logging
+    - nanopb
+    - PromisesObjC
+    - SwiftJWT
+
+EXTERNAL SOURCES:
+  app_links:
+    :path: ".symlinks/plugins/app_links/ios"
+  app_settings:
+    :path: ".symlinks/plugins/app_settings/ios"
+  ar_flutter_plugin_plus:
+    :path: ".symlinks/plugins/ar_flutter_plugin_plus/ios"
+  audioplayers_darwin:
+    :path: ".symlinks/plugins/audioplayers_darwin/darwin"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  ffmpeg_kit_flutter_new_min_gpl:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter_new_min_gpl/ios"
+  firebase_core:
+    :path: ".symlinks/plugins/firebase_core/ios"
+  firebase_messaging:
+    :path: ".symlinks/plugins/firebase_messaging/ios"
+  Flutter:
+    :path: Flutter
+  flutter_blue_plus_darwin:
+    :path: ".symlinks/plugins/flutter_blue_plus_darwin/darwin"
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/darwin"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  location:
+    :path: ".symlinks/plugins/location/ios"
+  open_filex:
+    :path: ".symlinks/plugins/open_filex/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  pointer_interceptor_ios:
+    :path: ".symlinks/plugins/pointer_interceptor_ios/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+  video_player_avfoundation:
+    :path: ".symlinks/plugins/video_player_avfoundation/darwin"
+  wifi_iot:
+    :path: ".symlinks/plugins/wifi_iot/ios"
+
+SPEC CHECKSUMS:
+  app_links: 585674be3c6661708e6cd794ab4f39fb9d8356f9
+  app_settings: 58017cd26b604ae98c3e65acbdd8ba173703cc82
+  ar_flutter_plugin_plus: 3ce96b7b8b6e8257c9623168ce41a46b5f52a674
+  ARCore: 510a91dbad2b4c26dca7073a1dc61a2b25a3392d
+  audioplayers_darwin: f15e209a3e856d1a7edcf98dc029f484fead2242
+  BlueCryptor: b0aee3d9b8f367b49b30de11cda90e1735571c24
+  BlueECC: c9662360a702839aa4d324f9f4cc8b899f6f7dd6
+  BlueRSA: 893ae5412de48a508a487067564dbcf9cd49df71
+  connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
+  device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
+  ffmpeg_kit_flutter_new_min_gpl: e16b907eba4feaf97a877b53ff442e139400a51f
+  Firebase: f07b15ae5a6ec0f93713e30b923d9970d144af3e
+  firebase_core: e6b8bb503b7d1d9856e698d4f193f7b414e6bf1f
+  firebase_messaging: fc7b6af84f4cd885a4999f51ea69ef20f380d70d
+  FirebaseABTesting: c05b5ec9f1d9f21a65909525de301d375032d9a4
+  FirebaseCore: bb595f3114953664e3c1dc032f008a244147cfd3
+  FirebaseCoreInternal: d7f5a043c2cd01a08103ab586587c1468047bca6
+  FirebaseInstallations: ae9f4902cb5bf1d0c5eaa31ec1f4e5495a0714e2
+  FirebaseMessaging: d33971b7bb252745ea6cd31ab190d1a1df4b8ed5
+  FirebaseRemoteConfig: 28e071a214ec66cdb113ed9ff4ce63e9abe018db
+  FirebaseRemoteConfigInterop: 1e31ec72b89c9924367c59bfb5ec9ab60d1d6766
+  FirebaseSharedSwift: 93426a1de92f19e1199fac5295a4f8df16458daa
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_blue_plus_darwin: 904ed52825285a15f60e9d90312337a09f11a785
+  flutter_local_notifications: ff50f8405aaa0ccdc7dcfb9022ca192e8ad9688f
+  flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
+  geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
+  GLTFSceneKit: d1b437c514ba2aed5555afb0fddd64e030612d57
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
+  image_picker_ios: 4f2f91b01abdb52842a8e277617df877e40f905b
+  KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
+  location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
+  LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
+  Logging: beeb016c9c80cf77042d62e83495816847ef108b
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  open_filex: 6e26e659846ec990262224a12ef1c528bb4edbe4
+  package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
+  path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  pointer_interceptor_ios: a78ffe95ad3c6cd52c42ad362c116d92355c3d42
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
+  shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
+  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
+  SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
+  url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
+  video_player_avfoundation: 7993f492ae0bd77edaea24d9dc051d8bb2cd7c86
+  wifi_iot: b5aafd6f9b52f8a357383a1deabab45f31cd602d
+
+PODFILE CHECKSUM: 274c91153099bb25ddd4d3e899d84901260449df
+
+COCOAPODS: 1.16.2
