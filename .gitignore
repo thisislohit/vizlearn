@@ -33,6 +33,13 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Android build outputs
+/android/build/
+/android/app/build/
+
+# Local AR plugin copy (app uses GitHub fork via pubspec)
+/plugins/
+
 # Symbolication related
 app.*.symbols
 
