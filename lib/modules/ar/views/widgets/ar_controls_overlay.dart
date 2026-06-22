@@ -7,20 +7,39 @@ import '../../../../utils/extensions/sizedbox_extensions.dart';
 import '../../controllers/ar_controller.dart';
 
 /// Floating overlay controls shown while a 3D model is visible.
-/// Must be placed inside a Stack, wrapped with a bottom Positioned by the parent.
-/// All touch targets are large (min 56 px) for young children.
 class ArControlsOverlay extends StatelessWidget {
+  final VoidCallback onCloseModel;
   final VoidCallback onResetPosition;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+  final VoidCallback onRotateLeft;
+  final VoidCallback onRotateRight;
+  final double rotationDegrees;
+  final ValueChanged<double> onRotationChanged;
 
-  const ArControlsOverlay({super.key, required this.onResetPosition});
+  const ArControlsOverlay({
+    super.key,
+    required this.onCloseModel,
+    required this.onResetPosition,
+    required this.onZoomIn,
+    required this.onZoomOut,
+    required this.onRotateLeft,
+    required this.onRotateRight,
+    required this.rotationDegrees,
+    required this.onRotationChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final ctrl = Get.find<ArController>();
-      if (!ctrl.isModelVisible.value) return const SizedBox.shrink();
-      return SafeArea(child: _buildPanel(ctrl));
-    });
+    return GetBuilder<ArController>(
+      id: 'arControls',
+      builder: (ctrl) {
+        if (!ctrl.isModelVisible.value) {
+          return const SizedBox.shrink();
+        }
+        return SafeArea(child: _buildPanel(ctrl));
+      },
+    );
   }
 
   Widget _buildPanel(ArController ctrl) {
@@ -42,7 +61,6 @@ class ArControlsOverlay extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Marker title
           if (ctrl.detectedMarker.value != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -54,8 +72,6 @@ class ArControlsOverlay extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-
-          // Controls row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -63,19 +79,17 @@ class ArControlsOverlay extends StatelessWidget {
                 icon: Icons.close_rounded,
                 label: 'Close',
                 color: AppColors.red,
-                onTap: () => Get.find<ArController>().closeModel(),
+                onTap: onCloseModel,
               ),
-              Obx(
-                () => _ControlButton(
-                  icon: ctrl.isAudioMuted.value
-                      ? Icons.volume_off_rounded
-                      : Icons.volume_up_rounded,
-                  label: ctrl.isAudioMuted.value ? 'Unmute' : 'Mute',
-                  color: ctrl.isAudioMuted.value
-                      ? Colors.grey
-                      : AppColors.buttonPrimary,
-                  onTap: () => Get.find<ArController>().toggleMute(),
-                ),
+              _ControlButton(
+                icon: ctrl.isAudioMuted.value
+                    ? Icons.volume_off_rounded
+                    : Icons.volume_up_rounded,
+                label: ctrl.isAudioMuted.value ? 'Unmute' : 'Mute',
+                color: ctrl.isAudioMuted.value
+                    ? Colors.grey
+                    : AppColors.buttonPrimary,
+                onTap: () => Get.find<ArController>().toggleMute(),
               ),
               _ControlButton(
                 icon: Icons.replay_rounded,
@@ -91,12 +105,75 @@ class ArControlsOverlay extends StatelessWidget {
               ),
             ],
           ),
-
           12.hS,
-
-          // Gesture hint
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ControlButton(
+                icon: Icons.zoom_out_rounded,
+                label: 'Smaller',
+                color: AppColors.buttonPrimary,
+                onTap: onZoomOut,
+              ),
+              _ControlButton(
+                icon: Icons.zoom_in_rounded,
+                label: 'Bigger',
+                color: AppColors.buttonPrimary,
+                onTap: onZoomIn,
+              ),
+              _ControlButton(
+                icon: Icons.rotate_left_rounded,
+                label: '−15°',
+                color: AppColors.info,
+                onTap: onRotateLeft,
+              ),
+              _ControlButton(
+                icon: Icons.rotate_right_rounded,
+                label: '+15°',
+                color: AppColors.info,
+                onTap: onRotateRight,
+              ),
+            ],
+          ),
+          16.hS,
+          Row(
+            children: [
+              Text(
+                '0°',
+                style: AppFont.w500.s11.copyWith(color: Colors.white38),
+              ),
+              Expanded(
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: AppColors.buttonPrimary,
+                    inactiveTrackColor: Colors.white24,
+                    thumbColor: AppColors.buttonPrimary,
+                    overlayColor: AppColors.buttonPrimary.withOpacity(0.2),
+                  ),
+                  child: Slider(
+                    value: rotationDegrees,
+                    min: 0,
+                    max: 360,
+                    divisions: 360,
+                    label: '${rotationDegrees.round()}°',
+                    onChanged: onRotationChanged,
+                  ),
+                ),
+              ),
+              Text(
+                '360°',
+                style: AppFont.w500.s11.copyWith(color: Colors.white38),
+              ),
+            ],
+          ),
           Text(
-            'Pinch to scale  •  Drag to move  •  Two fingers to rotate',
+            'Rotation: ${rotationDegrees.round()}°  •  Drag slider for full 360°',
+            style: AppFont.w500.s12.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+          8.hS,
+          Text(
+            'Drag to move  •  Two fingers to rotate on screen',
             style: AppFont.w400.s11.copyWith(color: Colors.white38),
             textAlign: TextAlign.center,
           ),

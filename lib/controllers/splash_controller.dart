@@ -86,7 +86,7 @@ class SplashController extends GetxController {
   }
 
   void _proceedToNextScreen() {
-    _secureStorage.load(key: CacheKeys.token).then((token) {
+    _secureStorage.load(key: CacheKeys.token).then((token) async {
       if (token.isNotEmpty) {
         // Initialize profile controller and fetch profile data
         ProfileBinding().dependencies();
@@ -98,7 +98,12 @@ class SplashController extends GetxController {
         }
         Get.offAllNamed(AppRoutes.home);
       } else {
-        Get.offAllNamed(AppRoutes.onboarding);
+        final hasSeenOnboarding = await _secureStorage.load(key: CacheKeys.hasSeenOnboarding);
+        if (hasSeenOnboarding == 'true') {
+          Get.offAllNamed(AppRoutes.arModeSelection);
+        } else {
+          Get.offAllNamed(AppRoutes.onboarding);
+        }
       }
     });
   }

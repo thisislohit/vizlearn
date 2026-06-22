@@ -13,8 +13,8 @@
 
     <!-- AR (camera) permissions -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <!-- ARCore feature: optional so the app installs on non-AR devices too -->
-    <uses-feature android:name="android.hardware.camera.ar" android:required="false"/>
+    <!-- ARCore feature: required for AR-only apps, optional for others -->
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
 
     <!--  Bluetooth permissions  -->
@@ -58,11 +58,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- ARCore: "optional" keeps the app installable on non-AR devices.
-             Change to "required" if AR is mandatory for app function. -->
+        <!-- ARCore: "required" ensures the Play Store only shows the app to AR-compatible devices
+             and prompts the user to install/update ARCore if missing. -->
         <meta-data
             android:name="com.google.ar.core"
-            android:value="optional"/>
+            android:value="required"
+            tools:replace="android:value" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

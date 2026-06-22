@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vizlearn/gen/assets.gen.dart';
 import '../routes/app_routes.dart';
+import '../utils/cache/cache_keys.dart';
+import '../utils/cache/secure_local_storage.dart';
+import '../injectors/configure_dependencies.dart';
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
   final RxInt currentPage = 0.obs;
   Timer? autoAdvanceTimer;
+  final SecureLocalStorage _secureStorage = getIt<SecureLocalStorage>();
 
   final List<String> images = [
     Assets.images.onboarding1.path,
@@ -63,8 +67,9 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void onFinish() {
+  void onFinish() async {
     autoAdvanceTimer?.cancel();
+    await _secureStorage.save(key: CacheKeys.hasSeenOnboarding, value: 'true');
     Get.offNamed(
       AppRoutes.arModeSelection,
       arguments: {'preLogin': true},

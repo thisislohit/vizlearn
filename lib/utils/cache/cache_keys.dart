@@ -3,6 +3,7 @@ class CacheKeys {
 
   static const String token = 'TOKEN';
   static const String refreshToken = 'REFRESH_TOKEN';
+  static const String hasSeenOnboarding = 'HAS_SEEN_ONBOARDING';
 
   // Content cache keys
   static const String aboutUsContent = 'ABOUT_US_CONTENT';

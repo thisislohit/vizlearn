@@ -8,14 +8,37 @@ import '../../../../theme/app_font.dart';
 import '../../../../routes/app_routes.dart';
 import '../../../../views/widgets/custom_app_bar.dart';
 import '../../../../views/widgets/custom_wrapper.dart';
+import '../../../../views/widgets/custom_elevated_button.dart';
 
-class ArModeSelectionScreen extends StatelessWidget {
+class ArModeSelectionScreen extends StatefulWidget {
   const ArModeSelectionScreen({super.key});
+
+  @override
+  State<ArModeSelectionScreen> createState() => _ArModeSelectionScreenState();
+}
+
+class _ArModeSelectionScreenState extends State<ArModeSelectionScreen> {
+  int _selectedModeIndex = 1; // Default to AR Mode
 
   bool get _isPreLogin {
     final args = Get.arguments;
     if (args is Map) return args['preLogin'] == true;
     return false;
+  }
+
+  void _handleProceed() {
+    final preLogin = _isPreLogin;
+    if (_selectedModeIndex == 0) {
+      // Hologram Mode
+      if (preLogin) {
+        Get.offAllNamed(AppRoutes.login);
+      } else {
+        Get.back();
+      }
+    } else {
+      // AR Mode
+      Get.toNamed(AppRoutes.arDownload);
+    }
   }
 
   @override
@@ -39,25 +62,31 @@ class ArModeSelectionScreen extends StatelessWidget {
             AppSizes.xl.hS,
             _buildModeCard(
               context,
+              index: 0,
               icon: Icons.view_in_ar_rounded,
               label: 'Hologram Mode',
               description: 'Project 3D models through your hologram device',
               color: Colors.white.withValues(alpha: 0.06),
-              onTap: preLogin
-                  ? () => Get.offAllNamed(AppRoutes.login)
-                  : () => Get.back(),
+              isHighlighted: _selectedModeIndex == 0,
+              onTap: () => setState(() => _selectedModeIndex = 0),
             ),
             AppSizes.md.hS,
             _buildModeCard(
               context,
+              index: 1,
               icon: Icons.camera_alt_rounded,
               label: 'AR Mode',
               description: 'Scan markers and see 3D models come alive!',
               color: Colors.white.withValues(alpha: 0.06),
-              isHighlighted: true,
-              onTap: () => Get.toNamed(AppRoutes.arDownload),
+              isHighlighted: _selectedModeIndex == 1,
+              onTap: () => setState(() => _selectedModeIndex = 1),
             ),
             const Spacer(),
+            CustomElevatedButton(
+              text: 'Continue',
+              onPressed: _handleProceed,
+            ),
+            AppSizes.lg.hS,
             _buildFooterNote(),
             AppSizes.lg.hS,
           ],
@@ -85,6 +114,7 @@ class ArModeSelectionScreen extends StatelessWidget {
 
   Widget _buildModeCard(
     BuildContext context, {
+    required int index,
     required IconData icon,
     required String label,
     required String description,
@@ -94,10 +124,13 @@ class ArModeSelectionScreen extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSizes.lg),
         decoration: BoxDecoration(
-          color: color,
+          color: isHighlighted 
+              ? AppColors.buttonPrimary.withValues(alpha: 0.1) 
+              : color,
           borderRadius: BorderRadius.circular(AppSizes.borderRadiusLg),
           border: Border.all(
             color: isHighlighted
@@ -131,7 +164,7 @@ class ArModeSelectionScreen extends StatelessWidget {
                   Row(
                     children: [
                       Text(label, style: AppFont.w700.s16),
-                      if (isHighlighted) ...[
+                      if (index == 1) ...[
                         AppSizes.sm.wS,
                         Container(
                           padding: const EdgeInsets.symmetric(

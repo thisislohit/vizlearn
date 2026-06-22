@@ -154,6 +154,22 @@ class ArController extends GetxController {
 
   // ── Scanner callbacks ─────────────────────────────────────────────────────
 
+  bool _detectionSequenceActive = false;
+
+  void _setScanPhase(ArScanPhase phase) {
+    if (scanPhase.value != phase) {
+      scanPhase.value = phase;
+      update(['arStatus']);
+    }
+  }
+
+  void _setModelVisible(bool visible) {
+    if (isModelVisible.value != visible) {
+      isModelVisible.value = visible;
+      update(['arControls', 'arStatus']);
+    }
+  }
+
   Future<void> onMarkerDetected(String markerName) async {
     final id = int.tryParse(markerName.replaceFirst('ar_marker_', ''));
     if (id == null) return;
@@ -161,41 +177,57 @@ class ArController extends GetxController {
     final marker = markers.where((m) => m.id == id).firstOrNull;
     if (marker == null || !marker.isFullyDownloaded) return;
 
-    if (detectedMarker.value?.id == id && isModelVisible.value) return;
+    if (detectedMarker.value?.id == id &&
+        (isModelVisible.value || _detectionSequenceActive)) {
+      return;
+    }
 
+    _detectionSequenceActive = true;
     detectedMarker.value = marker;
-    scanPhase.value = ArScanPhase.markerFound;
 
-    await Future.delayed(const Duration(milliseconds: 400));
-    scanPhase.value = ArScanPhase.modelLoading;
+    try {
+      _setScanPhase(ArScanPhase.markerFound);
 
-    await Future.delayed(const Duration(milliseconds: 500));
-    isModelVisible.value = true;
-    scanPhase.value = ArScanPhase.modelReady;
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (detectedMarker.value?.id != id) return;
 
-    if (!isAudioMuted.value) await _playAudio(marker);
-  }
+      _setScanPhase(ArScanPhase.modelLoading);
 
-  void onMarkerLost(String markerName) {
-    if (scanPhase.value == ArScanPhase.modelReady) {
-      scanPhase.value = ArScanPhase.scanning;
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (detectedMarker.value?.id != id) return;
+
+      _setModelVisible(true);
+      _setScanPhase(ArScanPhase.modelReady);
+
+      if (!isAudioMuted.value) await _playAudio(marker);
+    } finally {
+      _detectionSequenceActive = false;
     }
   }
 
-  void setScanReady() => scanPhase.value = ArScanPhase.scanning;
+  void onMarkerLost(String markerName) {
+    // Tracking glitches are common; keep the current UI while the model stays visible.
+  }
+
+  void setScanReady() {
+    _setScanPhase(ArScanPhase.scanning);
+  }
 
   void closeModel() {
-    isModelVisible.value = false;
+    _detectionSequenceActive = false;
+    _setModelVisible(false);
     detectedMarker.value = null;
-    scanPhase.value = ArScanPhase.scanning;
+    _setScanPhase(ArScanPhase.scanning);
     _audio.stop();
     isAudioPlaying.value = false;
+    update(['arControls']);
   }
 
   // ── Audio controls ────────────────────────────────────────────────────────
 
   Future<void> toggleMute() async {
     isAudioMuted.value = !isAudioMuted.value;
+    update(['arControls']);
     if (isAudioMuted.value) {
       await _audio.pause();
     } else {

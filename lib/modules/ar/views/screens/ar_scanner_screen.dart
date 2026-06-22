@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:app_settings/app_settings.dart';
 import 'package:ar_flutter_plugin_plus/ar_flutter_plugin.dart';
@@ -41,9 +42,18 @@ class _ArScannerScreenState extends State<ArScannerScreen>
   // Active 3D node and its last detected world transform
   ARNode? _currentNode;
   vm.Matrix4? _lastTransform;
+  vm.Matrix4? _latestBaseTransform;
+  vm.Vector3 _userTranslation = vm.Vector3.zero();
+  double _userRotationDegrees = 0.0;
+  double _userScaleMultiplier = 1.0;
+  static const _minUserScale = 0.25;
+  static const _maxUserScale = 4.0;
+  static const _zoomStep = 1.2;
   String? _currentMarkerName;
+  int? _activeMarkerId;
   bool _isReplacingModel = false;
   bool _isInteracting = false;
+  bool _disposed = false;
 
   // Map from various imageName forms → marker, for fast lookup
   final Map<String, ArMarkerModel> _markerByImageName = {};
@@ -61,18 +71,25 @@ class _ArScannerScreenState extends State<ArScannerScreen>
     _checkPermissionsAndInit();
   }
 
+  void _stopArCallbacks() {
+    _disposed = true;
+    _sessionManager?.onImageDetected = null;
+    _sessionManager?.onImageTrackingConfigured = null;
+    _sessionManager?.onTrackingStateChanged = null;
+  }
+
   @override
   void dispose() {
+    _stopArCallbacks();
     WidgetsBinding.instance.removeObserver(this);
+    _onCloseModel();
     _sessionManager?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _sessionManager?.dispose();
-    } else if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed) {
       // Re-check permission when returning to the app, especially if it was denied
       if (_cameraPermissionStatus != true) {
         _checkPermissionsAndInit();
@@ -134,51 +151,41 @@ class _ArScannerScreenState extends State<ArScannerScreen>
     // Fired on every detection event (continuous tracking)
     sessionManager.onImageDetected = _onImageDetected;
 
-    // Tracking quality changes — inform controller so UI can reflect loss
+    // Tracking quality changes — only update UI state; do not tear down the
+    // model on transient ARCore glitches (common on Android image tracking).
     sessionManager.onTrackingStateChanged = (state, reason) {
-      debugPrint('ArScanner: Tracking state changed: $state (reason: $reason)');
-      if (state != 'normal' && _currentMarkerName != null) {
-        _ctrl.onMarkerLost(_currentMarkerName!);
-        
-        // Hide model on tracking loss to match Unity's behavior
-        if (_currentNode != null) {
-          _objectManager?.removeNode(_currentNode!);
-          _currentNode = null;
-          _currentMarkerName = null;
-        }
+      if (_disposed) return;
+      if (state != 'normal' && _activeMarkerId != null) {
+        _ctrl.onMarkerLost(_currentMarkerName ?? '');
       }
     };
 
     objectManager.onPanStart = (_) => _isInteracting = true;
     objectManager.onPanEnd = (name, transform) {
       _isInteracting = false;
-      _lastTransform = transform;
+      _syncUserTransformFromWorld(transform);
+      _applyCurrentTransform();
     };
     objectManager.onRotationStart = (_) => _isInteracting = true;
     objectManager.onRotationEnd = (name, transform) {
       _isInteracting = false;
-      _lastTransform = transform;
-    };
-    objectManager.onScaleStart = (_) => _isInteracting = true;
-    objectManager.onScaleEnd = (name, transform) {
-      _isInteracting = false;
-      _lastTransform = transform;
+      _syncUserTransformFromWorld(transform);
+      _applyCurrentTransform();
     };
 
     await sessionManager.onInitialize(
       showAnimatedGuide: false,
-      showFeaturePoints: true, // Show dots to verify tracking is active
+      showFeaturePoints: false, // Turn off feature points to save CPU/Buffers on Android
       showPlanes: false,
       customPlaneTexturePath: null,
       showWorldOrigin: false,
       handleTaps: false,
       handlePans: true,
       handleRotation: true,
-      handleScaling: true,
       trackingImagePaths: trackingPaths,
-      continuousImageTracking: true, // MUST be true for continuous detection updates
-      imageTrackingUpdateIntervalMs: 100, // Faster detection response
-      lightIntensityMultiplier: 1.5, // Standard brightness (1000 was way too high)
+      continuousImageTracking: true,
+      imageTrackingUpdateIntervalMs: 500,
+      lightIntensityMultiplier: 1.5,
     );
 
     await objectManager.onInitialize();
@@ -219,50 +226,134 @@ class _ArScannerScreenState extends State<ArScannerScreen>
   // ── Image detection ───────────────────────────────────────────────────────
 
   void _onImageDetected(String imageName, vm.Matrix4 transformation) {
-    debugPrint('ArScanner: [NATIVE CALLBACK] Image detected: "$imageName"');
-    
-    // Look up marker by name or variations
+    if (_disposed) return;
+
     final marker = _markerByImageName[imageName] ??
         _markerByImageName[p.basename(imageName)] ??
         _markerByImageName[p.basenameWithoutExtension(imageName)] ??
         _markerByImageName['file://$imageName'];
 
-    if (marker == null) {
-      debugPrint('ArScanner: [WARNING] No marker found for "$imageName". Available keys: ${_markerByImageName.keys.take(10).join(", ")}');
+    if (marker == null) return;
+
+    if (_isInteracting) return;
+
+    if (_activeMarkerId == marker.id) {
+      final markerTransform = vm.Matrix4.fromFloat64List(transformation.storage);
+      final scale = marker.displayScale;
+      final baseTransform =
+          markerTransform.clone()..scaleByVector3(vm.Vector3(scale, scale, scale));
+      _latestBaseTransform = baseTransform;
+      final modelTransform = _composeModelTransform(baseTransform);
+      _lastTransform = modelTransform.clone();
+      if (_currentNode != null) {
+        _smoothUpdateNodeTransform(_currentNode!, modelTransform);
+      }
       return;
     }
 
-    debugPrint('ArScanner: >>> DETECTED: ${marker.title} (ID: ${marker.id}, Name: ${marker.markerName}) <<<');
+    if (_isReplacingModel) return;
 
-    // Build the model transform: same world pose as the marker, scaled by marker's displayScale
-    final modelTransform = vm.Matrix4.fromFloat64List(transformation.storage);
+    _activeMarkerId = marker.id;
+    _currentMarkerName = marker.markerName;
+
+    debugPrint(
+      'ArScanner: >>> DETECTED: ${marker.title} (ID: ${marker.id}, Name: ${marker.markerName}) <<<',
+    );
+
+    final markerTransform = vm.Matrix4.fromFloat64List(transformation.storage);
     final scale = marker.displayScale;
-    debugPrint('ArScanner: Placing ${marker.title} at scale $scale');
+    final baseTransform =
+        markerTransform.clone()..scaleByVector3(vm.Vector3(scale, scale, scale));
+    _latestBaseTransform = baseTransform;
+    _lastTransform = _composeModelTransform(baseTransform).clone();
 
-    modelTransform.scaleByVector3(vm.Vector3(scale, scale, scale));
-    
-    _lastTransform = modelTransform.clone();
-
-    if (_isInteracting) {
-      debugPrint('ArScanner: Interaction in progress, skipping marker update');
-      return;
-    }
-
-    if (_currentNode != null && _currentMarkerName == marker.markerName) {
-      // Same marker visible: update world position with basic smoothing to match Unity's behavior
-      _smoothUpdateNodeTransform(_currentNode!, modelTransform);
-    } else {
-      // New marker (or first detection): swap out the current model
-      _replaceModel(marker, modelTransform);
-    }
-
-    // Notify controller; it's a no-op if this marker is already active
+    _userTranslation = vm.Vector3.zero();
+    _userRotationDegrees = 0.0;
+    _userScaleMultiplier = 1.0;
+    _replaceModel(marker, _composeModelTransform(baseTransform));
     _ctrl.onMarkerDetected(marker.markerName);
+  }
+
+  vm.Matrix4 _composeModelTransform([vm.Matrix4? base]) {
+    final baseTransform = base ?? _latestBaseTransform;
+    if (baseTransform == null) return vm.Matrix4.identity();
+
+    final userTransform = vm.Matrix4.compose(
+      _userTranslation,
+      vm.Quaternion.axisAngle(
+        vm.Vector3(0, 1, 0),
+        vm.radians(_userRotationDegrees),
+      ),
+      vm.Vector3.all(_userScaleMultiplier),
+    );
+    return baseTransform * userTransform;
+  }
+
+  void _setRotationDegrees(double degrees) {
+    if (_currentNode == null) return;
+    _userRotationDegrees = degrees.clamp(0.0, 360.0);
+    _applyCurrentTransform();
+    if (mounted) setState(() {});
+  }
+
+  double _yAngleToDegrees(double radians) {
+    final degrees = vm.degrees(radians) % 360;
+    return degrees < 0 ? degrees + 360 : degrees;
+  }
+
+  void _syncUserTransformFromWorld(vm.Matrix4 worldTransform) {
+    final base = _latestBaseTransform;
+    if (base == null) return;
+
+    final relative = vm.Matrix4.inverted(base) * worldTransform;
+    final rotation = vm.Quaternion(0, 0, 0, 0);
+    final scale = vm.Vector3.zero();
+    relative.decompose(_userTranslation, rotation, scale);
+
+    _userScaleMultiplier = scale.x.clamp(_minUserScale, _maxUserScale);
+    _userRotationDegrees = _yAngleToDegrees(
+      math.atan2(
+        2.0 * (rotation.w * rotation.y + rotation.x * rotation.z),
+        1.0 - 2.0 * (rotation.y * rotation.y + rotation.z * rotation.z),
+      ),
+    );
+    _lastTransform = worldTransform.clone();
+    if (mounted) setState(() {});
+  }
+
+  void _applyCurrentTransform() {
+    final node = _currentNode;
+    if (node == null || _latestBaseTransform == null) return;
+    final transform = _composeModelTransform();
+    node.transform = transform;
+    _lastTransform = transform.clone();
+  }
+
+  void _zoomIn() {
+    if (_currentNode == null) return;
+    _userScaleMultiplier =
+        (_userScaleMultiplier * _zoomStep).clamp(_minUserScale, _maxUserScale);
+    _applyCurrentTransform();
+  }
+
+  void _zoomOut() {
+    if (_currentNode == null) return;
+    _userScaleMultiplier =
+        (_userScaleMultiplier / _zoomStep).clamp(_minUserScale, _maxUserScale);
+    _applyCurrentTransform();
+  }
+
+  void _rotateLeft() {
+    _setRotationDegrees((_userRotationDegrees + 15) % 360);
+  }
+
+  void _rotateRight() {
+    _setRotationDegrees((_userRotationDegrees - 15 + 360) % 360);
   }
 
   /// Basic smoothing for transformation updates, approximating Unity's exponential lerp
   void _smoothUpdateNodeTransform(ARNode node, vm.Matrix4 target) {
-    // For now, we apply directly. In a more advanced implementation, 
+    // For now, we apply directly. In a more advanced implementation,
     // we could interpolate between current and target over multiple frames.
     node.transform = target;
   }
@@ -276,7 +367,6 @@ class _ArScannerScreenState extends State<ArScannerScreen>
       if (old != null) {
         await _objectManager?.removeNode(old);
         _currentNode = null;
-        _currentMarkerName = null;
       }
 
       final modelPath = marker.modelLocalPath;
@@ -293,7 +383,9 @@ class _ArScannerScreenState extends State<ArScannerScreen>
       debugPrint('ArScanner: addNode result for ${marker.title}: $placed (path: $modelPath)');
       if (placed) {
         _currentNode = node;
-        _currentMarkerName = marker.markerName;
+      } else {
+        _currentMarkerName = null;
+        _activeMarkerId = null;
       }
     } catch (e) {
       debugPrint('ArScanner: failed to place model for ${marker.title}: $e');
@@ -306,10 +398,11 @@ class _ArScannerScreenState extends State<ArScannerScreen>
   // ── Control callbacks ─────────────────────────────────────────────────────
 
   Future<void> _resetModelPosition() async {
-    final node = _currentNode;
-    final last = _lastTransform;
-    if (node == null || last == null) return;
-    node.transform = last.clone();
+    _userTranslation = vm.Vector3.zero();
+    _userRotationDegrees = 0.0;
+    _userScaleMultiplier = 1.0;
+    _applyCurrentTransform();
+    if (mounted) setState(() {});
   }
 
   void _onCloseModel() {
@@ -317,9 +410,13 @@ class _ArScannerScreenState extends State<ArScannerScreen>
     if (node != null) {
       _objectManager?.removeNode(node);
       _currentNode = null;
-      _currentMarkerName = null;
-      _lastTransform = null;
     }
+    _currentMarkerName = null;
+    _activeMarkerId = null;
+    _lastTransform = null;
+    _userTranslation = vm.Vector3.zero();
+    _userRotationDegrees = 0.0;
+    _userScaleMultiplier = 1.0;
     _ctrl.closeModel();
   }
 
@@ -349,13 +446,21 @@ class _ArScannerScreenState extends State<ArScannerScreen>
           ),
 
           // ── Scanning frame animation ───────────────────────────────────
-          Obx(() {
-            final scanning =
-                _ctrl.scanPhase.value == ArScanPhase.scanning && _initialized;
-            return scanning
-                ? const ArScanningFrame()
-                : const SizedBox.shrink();
-          }),
+          if (_initialized)
+            GetBuilder<ArController>(
+              id: 'arStatus',
+              builder: (ctrl) {
+                final scanning =
+                    ctrl.scanPhase.value == ArScanPhase.scanning;
+                return IgnorePointer(
+                  ignoring: !scanning,
+                  child: Opacity(
+                    opacity: scanning ? 1 : 0,
+                    child: const ArScanningFrame(),
+                  ),
+                );
+              },
+            ),
 
           // ── Status indicator (top centre) ──────────────────────────────
           const Positioned(
@@ -373,7 +478,16 @@ class _ArScannerScreenState extends State<ArScannerScreen>
             bottom: 0,
             left: 0,
             right: 0,
-            child: ArControlsOverlay(onResetPosition: _resetModelPosition),
+            child: ArControlsOverlay(
+              onCloseModel: _onCloseModel,
+              onResetPosition: _resetModelPosition,
+              onZoomIn: _zoomIn,
+              onZoomOut: _zoomOut,
+              onRotateLeft: _rotateLeft,
+              onRotateRight: _rotateRight,
+              rotationDegrees: _userRotationDegrees,
+              onRotationChanged: _setRotationDegrees,
+            ),
           ),
 
           // ── Loading overlay while AR initialises ───────────────────────
@@ -392,6 +506,7 @@ class _ArScannerScreenState extends State<ArScannerScreen>
           padding: const EdgeInsets.all(12),
           child: GestureDetector(
             onTap: () {
+              _stopArCallbacks();
               _onCloseModel();
               Get.back();
             },
